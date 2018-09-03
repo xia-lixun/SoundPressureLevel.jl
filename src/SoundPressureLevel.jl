@@ -106,7 +106,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
             rm(out, force=true)
         end
     end
-    return r
+    return convert(Matrix{Float64},r)
 end
 
 

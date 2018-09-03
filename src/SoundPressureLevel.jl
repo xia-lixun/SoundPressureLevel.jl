@@ -96,7 +96,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
     if synchronous
         r = Soundcard.playrecord(y, ms, mm, fs)
     else
-        out = randstring() * ".wav"
+        out = "_splout.wav"
         Libaudio.wavwrite(DeviceUnderTest.mixer(y, ms), out, fs, 32)
         try
             f[:init]()
@@ -105,7 +105,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
             r = Soundcard.record(size(y,1), mm, fs)
             fetch(done)
         finally
-            rm(out, force=true)
+            # rm(out, force=true)
         end
     end
     return convert(Matrix{Float64},r)

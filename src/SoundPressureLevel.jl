@@ -23,10 +23,11 @@ end
 # hwinfo2string(hw::Dict{Symbol,String}) = hw[:calibrator] * "_" * hw[:db] * "_" * hw[:dba] * "_" * hw[:mic] * "_" * hw[:preamp] * "_" * hw[:gain] * "_" * hw[:soundcard]
 function inst2str(x::Instrument)
     s = string(x)
-    replace(s, "Instrument("=>"")
-    replace(s, ")"=>"")
-    replace(s, ':'=>'-')
-    replace(s, ','=>'_')
+    s = replace(s, "SoundPressureLevel.Instrument("=>"")
+    s = replace(s, "\"" => "")
+    s = replace(s, ")"=>"")
+    s = replace(s, ':'=>'-')
+    s = replace(s, ", "=>"_")
 end
 
 # example:
@@ -43,7 +44,7 @@ end
 #     wavwrite(r, joinpath(folderpath, t * "+" * hwinfo2string(hwinfo) * ".wav"), Fs=fs, nbits=32)
 #     r
 # end
-function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date(2018-08-20),"26XX","12AA",0,"UFX"))
+function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date(2018-07-24),"26XX","12AA",0,"UFX"))
     r = Soundcard.record(round(Int, t * fs), mm, fs)
     p = replace(string(now()), [':','.']=>'-')
     Libaudio.wavwrite(r, joinpath(root, p * "+" * inst2str(id) * ".wav"), fs, 32)
@@ -69,7 +70,7 @@ end
 #     end
 #     fileloc, diff(timespan)[1]
 # end
-function getlatest(root, id=Instrument("42AA",114,105.4,Date(2018-08-20),"26XX","12AA",0,"UFX"))
+function getlatest(root, id=Instrument("42AA",114,105.4,Date(2018-07-24),"26XX","12AA",0,"UFX"))
     loc = ""
     tspan = Vector{DateTime}([now(), now()])
     archive = [(DateTime(String(split(basename(i),"+")[1]), DateFormat("y-m-dTH-M-S-s")), i) for i in Libaudio.list(root, ".wav")]
@@ -129,8 +130,8 @@ function setdba(
     fs, 
     dbasetting, 
     root,
-    piston = Instrument("42AA",114,105.4,Date(2018-08-20),"26XX","12AA",0,"UFX"),
-    piezo = Instrument("42AB",114,NaN,Date(2018-08-20),"26XX","12AA",0,"UFX"),
+    piston = Instrument("42AA",114,105.4,Date(2018-07-24),"26XX","12AA",0,"UFX"),
+    piezo = Instrument("42AB",114,NaN,Date(2018-07-24),"26XX","12AA",0,"UFX"),
     synchronous = true,
     tcs = 3.0,
     td = 2.0,
@@ -195,8 +196,8 @@ function setdba(
     fs, 
     dbasetting, 
     root,
-    piston = Instrument("42AA",114,105.4,Date(2018-08-20),"26XX","12AA",0,"UFX"),
-    piezo = Instrument("42AB",114,NaN,Date(2018-08-20),"26XX","12AA",0,"UFX"),
+    piston = Instrument("42AA",114,105.4,Date(2018-07-24),"26XX","12AA",0,"UFX"),
+    piezo = Instrument("42AB",114,NaN,Date(2018-07-24),"26XX","12AA",0,"UFX"),
     synchronous = true,
     syncatten = -12,
     tcs = 3.0,

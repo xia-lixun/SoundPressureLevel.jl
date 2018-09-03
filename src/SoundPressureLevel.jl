@@ -105,8 +105,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
             r = Soundcard.record(size(y,1), mm, fs)
             fetch(done)
         finally
-            # out is used by another process which may not be release at this point?
-            # rm(out, force=true)
+            rm(out, force=true)
         end
     end
     return convert(Matrix{Float64},r)

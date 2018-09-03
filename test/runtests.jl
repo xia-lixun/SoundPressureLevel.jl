@@ -14,7 +14,7 @@ function simple_test()
     mm[1,1] = 1
     s,fs = Libaudio.wavread("test/acqua_ieee_male_250ms_10450ms.wav", "double")
     SoundPressureLevel.setdba(
-        r[hash("lux")], 
+        r[0x9fefe994b7e95bf1], 
         s[:,1], 
         1, 
         -6, 
@@ -26,4 +26,49 @@ function simple_test()
         SoundPressureLevel.Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFS"), 
         SoundPressureLevel.Instrument("42AB",114,NaN,Date("2018-07-24"),"26XX","12AA",0,"UFS"), 
         false)
+
+    SoundPressureLevel.setdba(
+        r[0x9fefe994b7e95bf1], 
+        s[:,2], 
+        1, 
+        -6, 
+        ms, 
+        mm, 
+        48000, 
+        57, 
+        "D:/Depot\\Git\\SoundPressureLevel.jl\\foo\\", 
+        SoundPressureLevel.Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFS"), 
+        SoundPressureLevel.Instrument("42AB",114,NaN,Date("2018-07-24"),"26XX","12AA",0,"UFS"))
+
+    SoundPressureLevel.setdba(
+        r[0x9fefe994b7e95bf1],
+        s[:,2:2], 
+        -6, 
+        ms, 
+        mm, 
+        48000, 
+        60, 
+        "D:/Depot\\Git\\SoundPressureLevel.jl\\foo\\",
+        SoundPressureLevel.Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFS"), 
+        SoundPressureLevel.Instrument("42AB",114,NaN,Date("2018-07-24"),"26XX","12AA",0,"UFS"))
+
+    SoundPressureLevel.setdba(
+        r[0x9fefe994b7e95bf1],
+        s[:,1:1], 
+        -6, 
+        ms, 
+        mm, 
+        48000, 
+        60, 
+        "D:/Depot\\Git\\SoundPressureLevel.jl\\foo\\",
+        SoundPressureLevel.Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFS"), 
+        SoundPressureLevel.Instrument("42AB",114,NaN,Date("2018-07-24"),"26XX","12AA",0,"UFS"),
+        false,
+        -10,
+        3.0,
+        2.0,
+        1,
+        180,
+        0.0,
+        47999.6)
 end

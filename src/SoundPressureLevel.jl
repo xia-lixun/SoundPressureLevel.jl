@@ -148,8 +148,8 @@ function setdba(
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
     @info "use latest calibration files" pstnl pezol
-    @assert pstnd ≤ Dates.Millisecond(Dates.Day(maxdayadd)))
-    @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd)))
+    @assert pstnd ≤ Dates.Millisecond(Dates.Day(maxdayadd))
+    @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
     pstn, sr = Libaudio.wavread(pstnl, "double")

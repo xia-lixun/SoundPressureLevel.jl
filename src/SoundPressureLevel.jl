@@ -101,7 +101,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
         try
             f[:init]()
             f[:readyplay](out)
-            done = remotecall(f[:play], wpid[1])
+            done = remotecall(f[:play], workers()[1])
             r = Soundcard.record(size(y,1), mm, fs)
             fetch(done)
         finally
@@ -142,7 +142,6 @@ function setdba(
     barocorrection = 0.0)
     
     @assert nprocs() > 1
-    wpid = workers()
     @assert size(ms, 1) == 1
     @assert size(mm, 2) == 1
     @assert now() - DateTime(piston.lastcal) ≤ Dates.Millisecond(Dates.Day(maxdaycal))
@@ -212,7 +211,6 @@ function setdba(
     fm = fs)
     
     @assert nprocs() > 1
-    wpid = workers()
     @assert size(mm,2) == 1
     @assert now() - DateTime(piston.lastcal) ≤ Dates.Millisecond(Dates.Day(maxdaycal))
     @assert now() - DateTime(piezo.lastcal) ≤ Dates.Millisecond(Dates.Day(maxdaycal))

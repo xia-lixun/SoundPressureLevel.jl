@@ -1,5 +1,6 @@
 module SoundPressureLevel
 
+using Distributed
 using Dates
 using Random
 using Soundcard

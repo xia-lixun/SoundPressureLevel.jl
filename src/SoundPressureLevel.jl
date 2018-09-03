@@ -1,10 +1,10 @@
 module SoundPressureLevel
+
 using Dates
 using Random
-using WAV
 using Soundcard
 using Libaudio
-@everywhere using DeviceUnderTest
+using DeviceUnderTest
 
 
 
@@ -46,7 +46,7 @@ end
 function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date(2018-08-20),"26XX","12AA",0,"UFX"))
     r = Soundcard.record(round(Int, t * fs), mm, fs)
     p = replace(string(now()), [':','.']=>'-')
-    wavwrite(r, joinpath(root, p * "+" * inst2str(id) * ".wav"), Fs=fs, nbits=32)
+    Libaudio.wavwrite(r, joinpath(root, p * "+" * inst2str(id) * ".wav"), fs, 32)
     return r
 end
 
@@ -95,7 +95,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
         r = Soundcard.playrecord(y, ms, mm, fs)
     else
         out = randstring() * ".wav"
-        wavwrite(DeviceUnderTest.mixer(y, ms), out, Fs=fs, nbits=32)
+        Libaudio.wavwrite(DeviceUnderTest.mixer(y, ms), out, fs, 32)
         try
             f[:init]()
             f[:readyplay](out)
@@ -152,8 +152,8 @@ function setdba(
     @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd)))
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
-    pstn, sr = wavread(pstnl)
-    pezo, sr = wavread(pezol)
+    pstn, sr = Libaudio.wavread(pstnl, "double")
+    pezo, sr = Libaudio.wavread(pezol, "double")
 
     m = length(symbol)
     n = round(Int, td*fs)
@@ -219,8 +219,8 @@ function setdba(
     @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd)))
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
-    pstn, sr = wavread(pstnl)
-    pezo, sr = wavread(pezol)
+    pstn, sr = Libaudio.wavread(pstnl, "double")
+    pezo, sr = Libaudio.wavread(pezol, "double")
 
     rate = synchronous ? fs : fm
     s = Libaudio.symbol_expsinesweep(800, 2000, 0.5, rate)

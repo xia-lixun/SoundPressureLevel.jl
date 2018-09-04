@@ -21,7 +21,6 @@ struct Instrument
 end
 
 
-# hwinfo2string(hw::Dict{Symbol,String}) = hw[:calibrator] * "_" * hw[:db] * "_" * hw[:dba] * "_" * hw[:mic] * "_" * hw[:preamp] * "_" * hw[:gain] * "_" * hw[:soundcard]
 function inst2str(x::Instrument)
     s = string(x)
     s = replace(s, "SoundPressureLevel.Instrument("=>"")
@@ -31,20 +30,7 @@ function inst2str(x::Instrument)
     s = replace(s, ", "=>"_")
 end
 
-# example:
-#   mixmic = zeros(8,1)
-#   micmic[2,1] = 1.0
-#   hwspec = Dict(:calibrator=>"42AA", :db=>"114.0", :dba=>"105.4", :mic=>"26AM", :preamp=>"12AA", :gain=>"0dB", :soundcard=>"UFX")
-#   levelcalibrate_updateref(mixmic, 60.0, 48000, "D:\\AATT\\Data\\Calib\\Level", hwinfo=hwspec)
 
-# function levelcalibrate_updateref(mixmic::Matrix{Float64}, seconds, fs, folderpath;
-#     hwinfo = Dict(:calibrator=>"42AA", :db=>"114.0", :dba=>"105.4", :mic=>"26XX", :preamp=>"12AA", :gain=>"0dB", :soundcard=>"UFX"))
-    
-#     r = SoundcardAPI.record(round(Int64, seconds * fs), mixmic, fs)
-#     t = replace(string(now()), [':','.'], '-')
-#     wavwrite(r, joinpath(folderpath, t * "+" * hwinfo2string(hwinfo) * ".wav"), Fs=fs, nbits=32)
-#     r
-# end
 function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFX"))
     r = Soundcard.record(round(Int, t * fs), mm, fs)
     p = replace(string(now()), [':','.']=>'-')
@@ -53,24 +39,7 @@ function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date(
 end
 
 
-# note: time diff in millseconds, use Dates.Millisecond(24*3600*1000) for conditions
-# function levelcalibrate_retrievelatest(folderpath;
-#     hwinfo = Dict(:calibrator=>"42AA", :db=>"114.0", :dba=>"105.4", :mic=>"26XX", :preamp=>"12AA", :gain=>"0dB", :soundcard=>"UFX"))
 
-#     fileloc = ""
-#     timespan = Vector{DateTime}([now(), now()])
-#     archive = [(DateTime(String(split(basename(i),"+")[1]), DateFormat("y-m-dTH-M-S-s")), i) for i in Libaudio.list(folderpath, t=".wav")]
-#     sort!(archive, by=x->x[1], rev=true)
-    
-#     for i in archive
-#         if String(split(basename(i[2]),"+")[2]) == hwinfo2string(hwinfo) * ".wav"
-#             timespan[1] = i[1]
-#             fileloc = i[2]
-#             break
-#         end
-#     end
-#     fileloc, diff(timespan)[1]
-# end
 function getlatest(root, id=Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFX"))
     loc = ""
     tspan = Vector{DateTime}([now(), now()])
@@ -120,6 +89,7 @@ end
  3) 'root' is the path for reference mic recordings of the calibrators (piston and piezo etc...)
  4) validation method 1: compare against the spl meter
     validation method 2: 200hz -> 10dB lower than dBSPL, 1kHz-> the same, 6kHz-> almost the same, 7kHz-> 0.8 dB lower than dBSPL
+ 5) 'dbasetting' if given NaN then no gain adjustment is applied and the dba measurement corresponds to 'gaininit'
 """
 function setdba(
     f,
@@ -171,7 +141,7 @@ function setdba(
     end
 
     pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
-    gainadj = gaininit+(dbasetting-pstndba[1])
+    gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x[1:m,1] = symbol * 10^(gainadj/20)
     y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)
@@ -241,7 +211,7 @@ function setdba(
     end
 
     pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
-    gainadj = gaininit+(dbasetting-pstndba[1])
+    gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x = Libaudio.encode_syncsymbol(tcs, s, td, 10^(gainadj/20) * source, rate, 1, syncatten)
     y = recording(f, x, ms, mm, fs, synchronous) 

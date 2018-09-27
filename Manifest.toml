@@ -59,7 +59,7 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DeviceUnderTest]]
 deps = ["Libaudio", "Test"]
-git-tree-sha1 = "0789eb54d449f0acf23ef17b5a2bfb78c64a823f"
+git-tree-sha1 = "b155062e9a9368679ad4a0c31c4d01ae9ec91f68"
 repo-rev = "master"
 repo-url = "https://github.com/xia-lixun/DeviceUnderTest.jl"
 uuid = "b9a09440-a9ba-11e8-0b7e-3f451cc48bcf"

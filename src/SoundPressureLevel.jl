@@ -118,7 +118,9 @@ function setdba(
 
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
-    @info "use latest calibration files" pstnl pezol
+    printstyled("soundpressurelevel.setdba(::vector): use latest calibration files:\n", color=:light_yellow)
+    printstyled("                                     $pstnl\n", color=:light_yellow)  
+    printstyled("                                     $pezol\n", color=:light_yellow)  
     @assert pstnd ≤ Dates.Millisecond(Dates.Day(maxdayadd))
     @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
 
@@ -135,9 +137,9 @@ function setdba(
     pstnspl = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
     pezospl = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dbspl)
     if abs(pstnspl[1]-pezospl[1]) > 0.5
-        @error "calibration deviation > 0.5 dBSPL, please re-calibrate?"
+        error("soundpressurelevel.setdba(::vector): calibration deviation > 0.5 dBSPL please redo the calibrate")
     else
-        @info "calibration deviation" abs(pstnspl[1]-pezospl[1])
+        printstyled("soundpressurelevel.setdba(::vector): calibration deviation $(abs(pstnspl[1]-pezospl[1]))\n", color=:light_yellow) 
     end
 
     pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
@@ -186,7 +188,10 @@ function setdba(
 
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
-    @info "use latest calibration files" pstnl pezol
+    printstyled("soundpressurelevel.setdba(::matrix): use latest calibration files:\n", color=:light_yellow) 
+    printstyled("                                     $pstnl\n", color=:light_yellow) 
+    printstyled("                                     $pezol\n", color=:light_yellow) 
+
     @assert pstnd ≤ Dates.Millisecond(Dates.Day(maxdayadd))
     @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
 
@@ -205,9 +210,9 @@ function setdba(
     pstnspl = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
     pezospl = Libaudio.spl(pezo[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dbspl)
     if abs(pstnspl[1]-pezospl[1]) > 0.5
-        @error "calibration deviation > 0.5 dBSPL, please re-calibrate?"
+        error("soundpressurelevel.setdba(::matrix): calibration deviation > 0.5 dBSPL please redo the calibrate")
     else
-        @info "calibration deviation" abs(pstnspl[1]-pezospl[1])
+        printstyled("soundpressurelevel.setdba(::matrix): calibration deviation $(abs(pstnspl[1]-pezospl[1]))\n", color=:light_yellow) 
     end
 
     pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
@@ -218,7 +223,7 @@ function setdba(
     symloc = Libaudio.decode_syncsymbol(y, s, td, size(source,1)/rate, fs)
     bl = symloc[1]
     br = symloc[1] + round(Int,size(source,1)/rate*fs) - 1
-
+    
     pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
     return gainadj, pstndba[1]
 end

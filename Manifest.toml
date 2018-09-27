@@ -59,7 +59,7 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DeviceUnderTest]]
 deps = ["Libaudio", "Test"]
-git-tree-sha1 = "b155062e9a9368679ad4a0c31c4d01ae9ec91f68"
+git-tree-sha1 = "8df2289cfcbd8732f93a889219452af3194c7450"
 repo-rev = "master"
 repo-url = "https://github.com/xia-lixun/DeviceUnderTest.jl"
 uuid = "b9a09440-a9ba-11e8-0b7e-3f451cc48bcf"
@@ -102,7 +102,7 @@ uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
 [[Libaudio]]
 deps = ["FFTW", "LinearAlgebra", "Plots", "Polynomials", "Random", "SHA", "Statistics", "Test"]
-git-tree-sha1 = "cb32688d127065938f45348f72cbd7cb4b92c9f3"
+git-tree-sha1 = "64e3eb72eea03393d4c6fb07b357b04e66e112ff"
 repo-rev = "master"
 repo-url = "https://github.com/xia-lixun/Libaudio.jl"
 uuid = "492fcaa0-a483-11e8-0aa5-8960d485180b"
@@ -234,7 +234,7 @@ version = "0.3.1"
 
 [[Soundcard]]
 deps = ["Libaudio", "SharedArrays", "Statistics", "Test"]
-git-tree-sha1 = "313445273bd218ce918d6ef1f92ad5bf46dcc1ee"
+git-tree-sha1 = "c7c6b47c14948813f9f42d697dc125ec8db80da7"
 repo-rev = "master"
 repo-url = "https://github.com/xia-lixun/Soundcard.jl"
 uuid = "769233a0-a99e-11e8-0f56-b3b741a1b319"

@@ -12,7 +12,7 @@ function simple_test()
     ms[1,1] = 1
     mm = zeros(8,1)
     mm[1,1] = 1
-    s,fs = Libaudio.wavread("test/acqua_ieee_male_250ms_10450ms.wav", "double")
+    s,fs = Libaudio.wavread_("test/acqua_ieee_male_250ms_10450ms.wav", Float64)
     SoundPressureLevel.setdba(
         r[0x9fefe994b7e95bf1], 
         s[:,1], 

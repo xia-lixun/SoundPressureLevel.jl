@@ -34,7 +34,7 @@ end
 function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFX"))
     r = Soundcard.record(round(Int, t * fs), mm, fs)
     p = replace(string(now()), [':','.']=>'-')
-    Libaudio.wavwrite(r, joinpath(root, p * "+" * inst2str(id) * ".wav"), fs, 32)
+    Libaudio.wavwrite_(joinpath(root, p * "+" * inst2str(id) * ".wav"), r, Int(fs), 32)
     return r
 end
 
@@ -66,7 +66,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
         r = Soundcard.playrecord(y, ms, mm, fs)
     else
         out = "_splout.wav"
-        Libaudio.wavwrite(DeviceUnderTest.mixer(y, ms), out, fs, 32)
+        Libaudio.wavwrite_(out, DeviceUnderTest.mixer(y, ms), Int(fs), 32)
         try
             f[:init]()
             f[:readyplay](out)
@@ -125,8 +125,8 @@ function setdba(
     @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
-    pstn, sr = Libaudio.wavread(pstnl, "double")
-    pezo, sr = Libaudio.wavread(pezol, "double")
+    pstn, sr = Libaudio.wavread_(pstnl, Float64)
+    pezo, sr = Libaudio.wavread_(pezol, Float64)
 
     m = length(symbol)
     n = round(Int, td*fs)
@@ -196,8 +196,8 @@ function setdba(
     @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
-    pstn, sr = Libaudio.wavread(pstnl, "double")
-    pezo, sr = Libaudio.wavread(pezol, "double")
+    pstn, sr = Libaudio.wavread_(pstnl, Float64)
+    pezo, sr = Libaudio.wavread_(pezol, Float64)
 
     rate = synchronous ? fs : fm
     s = Libaudio.symbol_expsinesweep(800, 2000, 0.5, rate)

@@ -121,8 +121,8 @@ function setdba(
     printstyled("soundpressurelevel.setdba(::vector): use latest calibration files:\n", color=:light_yellow)
     printstyled("                                     $pstnl\n", color=:light_yellow)  
     printstyled("                                     $pezol\n", color=:light_yellow)  
-    @assert pstnd ≤ Dates.Millisecond(Dates.Day(maxdayadd))
-    @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
+    pstnd ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::vector): calibration is too old\n", color=:light_red)
+    pezod ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::vector): calibration is too old\n", color=:light_red)
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
     pstn, sr = Libaudio.wavread_(pstnl, Float64)
@@ -192,8 +192,8 @@ function setdba(
     printstyled("                                     $pstnl\n", color=:light_yellow) 
     printstyled("                                     $pezol\n", color=:light_yellow) 
 
-    @assert pstnd ≤ Dates.Millisecond(Dates.Day(maxdayadd))
-    @assert pezod ≤ Dates.Millisecond(Dates.Day(maxdayadd))
+    pstnd ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::matrix): calibration is too old\n", color=:light_red)
+    pezod ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::matrix): calibration is too old\n", color=:light_red)
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
     pstn, sr = Libaudio.wavread_(pstnl, Float64)

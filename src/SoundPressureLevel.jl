@@ -34,7 +34,7 @@ end
 function addlatest(mm::Matrix, t, fs, root, id=Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFX"))
     r = Soundcard.record(round(Int, t * fs), mm, fs)
     p = replace(string(now()), [':','.']=>'-')
-    Libaudio.wavwrite_(joinpath(root, p * "+" * inst2str(id) * ".wav"), r, Int(fs), 32)
+    Libaudio.wavwrite(joinpath(root, p * "+" * inst2str(id) * ".wav"), r, Int(fs), 32)
     return r
 end
 
@@ -66,7 +66,7 @@ function recording(f, y, ms::Matrix, mm::Matrix, fs, synchronous=true)
         r = Soundcard.playrecord(y, ms, mm, fs)
     else
         out = "_splout.wav"
-        Libaudio.wavwrite_(out, DeviceUnderTest.mixer(y, ms), Int(fs), 32)
+        Libaudio.wavwrite(out, DeviceUnderTest.mixer(y, ms), Int(fs), 32)
         try
             f[:init]()
             f[:readyplay](out)
@@ -118,15 +118,20 @@ function setdba(
 
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
-    printstyled("soundpressurelevel.setdba(::vector): use latest calibration files:\n", color=:light_yellow)
-    printstyled("                                     $pstnl\n", color=:light_yellow)  
-    printstyled("                                     $pezol\n", color=:light_yellow)  
-    pstnd ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::vector): calibration is too old\n", color=:light_red)
-    pezod ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::vector): calibration is too old\n", color=:light_red)
+    # printstyled("soundpressurelevel.setdba(::vector): use latest calibration files:\n", color=:light_yellow)
+    # printstyled("                                     $pstnl\n", color=:light_yellow)  
+    # printstyled("                                     $pezol\n", color=:light_yellow)  
+    rootlog = "C:/Drivers/Julia/run.log"
+    Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): use latest calibration files:")
+    Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): $pstnl")
+    Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): $pezol")
+
+    pstnd ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration is too old")
+    pezod ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration is too old")
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
-    pstn, sr = Libaudio.wavread_(pstnl, Float64)
-    pezo, sr = Libaudio.wavread_(pezol, Float64)
+    pstn, sr = Libaudio.wavread(pstnl, Float64)
+    pezo, sr = Libaudio.wavread(pezol, Float64)
 
     m = length(symbol)
     n = round(Int, td*fs)
@@ -137,9 +142,9 @@ function setdba(
     pstnspl = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
     pezospl = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dbspl)
     if abs(pstnspl[1]-pezospl[1]) > 0.5
-        error("soundpressurelevel.setdba(::vector): calibration deviation > 0.5 dBSPL please redo the calibrate")
+        Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation > 0.5 dB")
     else
-        printstyled("soundpressurelevel.setdba(::vector): calibration deviation $(abs(pstnspl[1]-pezospl[1]))\n", color=:light_yellow) 
+        Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB")
     end
 
     pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
@@ -148,6 +153,7 @@ function setdba(
     x[1:m,1] = symbol * 10^(gainadj/20)
     y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)
     pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+
     return gainadj, pstndba[1]
 end
 
@@ -188,16 +194,20 @@ function setdba(
 
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
-    printstyled("soundpressurelevel.setdba(::matrix): use latest calibration files:\n", color=:light_yellow) 
-    printstyled("                                     $pstnl\n", color=:light_yellow) 
-    printstyled("                                     $pezol\n", color=:light_yellow) 
+    # printstyled("soundpressurelevel.setdba(::matrix): use latest calibration files:\n", color=:light_yellow) 
+    # printstyled("                                     $pstnl\n", color=:light_yellow) 
+    # printstyled("                                     $pezol\n", color=:light_yellow)
+    rootlog = "C:/Drivers/Julia/run.log"
+    Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): use latest calibration files:") 
+    Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): $pstnl") 
+    Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): $pezol") 
 
-    pstnd ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::matrix): calibration is too old\n", color=:light_red)
-    pezod ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && printstyled("soundpressurelevel.setdba(::matrix): calibration is too old\n", color=:light_red)
+    pstnd ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): calibration is too old") 
+    pezod ≥ Dates.Millisecond(Dates.Day(maxdayadd)) && Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): calibration is too old") 
 
     wf = Libaudio.WindowFrame(fs,16384,16384÷4)
-    pstn, sr = Libaudio.wavread_(pstnl, Float64)
-    pezo, sr = Libaudio.wavread_(pezol, Float64)
+    pstn, sr = Libaudio.wavread(pstnl, Float64)
+    pezo, sr = Libaudio.wavread(pezol, Float64)
 
     rate = synchronous ? fs : fm
     s = Libaudio.symbol_expsinesweep(800, 2000, 0.5, rate)
@@ -210,9 +220,9 @@ function setdba(
     pstnspl = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
     pezospl = Libaudio.spl(pezo[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dbspl)
     if abs(pstnspl[1]-pezospl[1]) > 0.5
-        error("soundpressurelevel.setdba(::matrix): calibration deviation > 0.5 dBSPL please redo the calibrate")
+        Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation > 0.5 dB")
     else
-        printstyled("soundpressurelevel.setdba(::matrix): calibration deviation $(abs(pstnspl[1]-pezospl[1]))\n", color=:light_yellow) 
+        Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB") 
     end
 
     pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
@@ -227,6 +237,7 @@ function setdba(
     pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
     return gainadj, pstndba[1]
 end
+
 
 
 

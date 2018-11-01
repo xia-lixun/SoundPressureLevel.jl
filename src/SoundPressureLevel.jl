@@ -121,7 +121,7 @@ function setdba(
     # printstyled("soundpressurelevel.setdba(::vector): use latest calibration files:\n", color=:light_yellow)
     # printstyled("                                     $pstnl\n", color=:light_yellow)  
     # printstyled("                                     $pezol\n", color=:light_yellow)  
-    rootlog = "C:/Drivers/Julia/run.log"
+    rootlog = joinpath(Libaudio.folder(), Libaudio.logfile())
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): use latest calibration files:")
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): $pstnl")
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): $pezol")
@@ -139,22 +139,23 @@ function setdba(
     x[1:m,1] = symbol * 10^(gaininit/20)
     y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)  
     
-    pstnspl = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
-    pezospl = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dbspl)
+    val = Bool[0,0,0,0]
+    val[1], pstnspl = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
+    val[2], pezospl = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dbspl)
     if abs(pstnspl[1]-pezospl[1]) > 0.5
         Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation > 0.5 dB")
     else
         Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB")
     end
 
-    pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[3], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
     gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x[1:m,1] = symbol * 10^(gainadj/20)
     y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)
-    pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[4], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
 
-    return gainadj, pstndba[1]
+    return (all(val), gainadj, pstndba[1])
 end
 
 
@@ -197,7 +198,7 @@ function setdba(
     # printstyled("soundpressurelevel.setdba(::matrix): use latest calibration files:\n", color=:light_yellow) 
     # printstyled("                                     $pstnl\n", color=:light_yellow) 
     # printstyled("                                     $pezol\n", color=:light_yellow)
-    rootlog = "C:/Drivers/Julia/run.log"
+    rootlog = joinpath(Libaudio.folder(), Libaudio.logfile())
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): use latest calibration files:") 
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): $pstnl") 
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): $pezol") 
@@ -209,33 +210,34 @@ function setdba(
     pstn, sr = Libaudio.wavread(pstnl, Float64)
     pezo, sr = Libaudio.wavread(pezol, Float64)
 
+    val = Bool[0,0,0,0,0,0]
     rate = synchronous ? fs : fm
     s = Libaudio.symbol_expsinesweep(800, 2000, 0.5, rate)
     x = Libaudio.encode_syncsymbol(tcs, s, td, 10^(gaininit/20) * source, rate, 1, syncatten)
     y = recording(f, x, ms, mm, fs, synchronous)
-    symloc = Libaudio.decode_syncsymbol(y, s, td, size(source,1)/rate, fs)
+    val[1], symloc = Libaudio.decode_syncsymbol(y, s, td, size(source,1)/rate, fs)
     bl = symloc[1]
     br = symloc[1] + round(Int,size(source,1)/rate*fs) - 1
 
-    pstnspl = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
-    pezospl = Libaudio.spl(pezo[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dbspl)
+    val[2], pstnspl = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dbspl+barocorrection)
+    val[3], pezospl = Libaudio.spl(pezo[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dbspl)
     if abs(pstnspl[1]-pezospl[1]) > 0.5
         Libaudio.printl(rootlog, :light_red, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation > 0.5 dB")
     else
         Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB") 
     end
 
-    pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[4], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
     gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x = Libaudio.encode_syncsymbol(tcs, s, td, 10^(gainadj/20) * source, rate, 1, syncatten)
     y = recording(f, x, ms, mm, fs, synchronous) 
-    symloc = Libaudio.decode_syncsymbol(y, s, td, size(source,1)/rate, fs)
+    val[5], symloc = Libaudio.decode_syncsymbol(y, s, td, size(source,1)/rate, fs)
     bl = symloc[1]
     br = symloc[1] + round(Int,size(source,1)/rate*fs) - 1
     
-    pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
-    return gainadj, pstndba[1]
+    val[6], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    return (all(val), gainadj, pstndba[1])
 end
 
 

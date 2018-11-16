@@ -102,7 +102,7 @@ function setdba(
     dbasetting, 
     root,
     piston = Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFX"),
-    piezo = Instrument("42AB",114,NaN,Date("2018-07-24"),"26XX","12AA",0,"UFX"),
+    piezo = Instrument("42AB",114,114,Date("2018-07-24"),"26XX","12AA",0,"UFX"),
     synchronous = true,
     tcs = 3.0,
     td = 2.0,
@@ -118,9 +118,7 @@ function setdba(
 
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
-    # printstyled("soundpressurelevel.setdba(::vector): use latest calibration files:\n", color=:light_yellow)
-    # printstyled("                                     $pstnl\n", color=:light_yellow)  
-    # printstyled("                                     $pezol\n", color=:light_yellow)  
+
     rootlog = joinpath(Libaudio.folder(), Libaudio.logfile())
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): use latest calibration files:")
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): $pstnl")
@@ -148,12 +146,12 @@ function setdba(
         Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB")
     end
 
-    val[3], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[3], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
     gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x[1:m,1] = symbol * 10^(gainadj/20)
     y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)
-    val[4], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[4], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
 
     return (all(val), gainadj, pstndba[1])
 end
@@ -178,7 +176,7 @@ function setdba(
     dbasetting, 
     root,
     piston = Instrument("42AA",114,105.4,Date("2018-07-24"),"26XX","12AA",0,"UFX"),
-    piezo = Instrument("42AB",114,NaN,Date("2018-07-24"),"26XX","12AA",0,"UFX"),
+    piezo = Instrument("42AB",114,114,Date("2018-07-24"),"26XX","12AA",0,"UFX"),
     synchronous = true,
     syncatten = -12,
     tcs = 3.0,
@@ -195,9 +193,7 @@ function setdba(
 
     pstnl, pstnd = getlatest(root, piston)
     pezol, pezod = getlatest(root, piezo)
-    # printstyled("soundpressurelevel.setdba(::matrix): use latest calibration files:\n", color=:light_yellow) 
-    # printstyled("                                     $pstnl\n", color=:light_yellow) 
-    # printstyled("                                     $pezol\n", color=:light_yellow)
+
     rootlog = joinpath(Libaudio.folder(), Libaudio.logfile())
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): use latest calibration files:") 
     Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): $pstnl") 
@@ -227,7 +223,7 @@ function setdba(
         Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB") 
     end
 
-    val[4], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[4], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
     gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x = Libaudio.encode_syncsymbol(tcs, s, td, 10^(gainadj/20) * source, rate, 1, syncatten)
@@ -236,7 +232,7 @@ function setdba(
     bl = symloc[1]
     br = symloc[1] + round(Int,size(source,1)/rate*fs) - 1
     
-    val[6], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piston.dba, weighting="A")
+    val[6], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
     return (all(val), gainadj, pstndba[1])
 end
 

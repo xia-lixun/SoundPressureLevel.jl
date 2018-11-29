@@ -146,12 +146,12 @@ function setdba(
         Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::vector): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB")
     end
 
-    val[3], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
+    val[3], pstndba = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
     gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x[1:m,1] = symbol * 10^(gainadj/20)
     y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)
-    val[4], pstndba = Libaudio.spl(pstn[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
+    val[4], pstndba = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
 
     return (all(val), gainadj, pstndba[1])
 end
@@ -223,7 +223,7 @@ function setdba(
         Libaudio.printl(rootlog, :light_yellow, Libaudio.nows() * " | SoundPressureLevel.setdba(::matrix): calibration deviation $(abs(pstnspl[1]-pezospl[1])) dB") 
     end
 
-    val[4], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
+    val[4], pstndba = Libaudio.spl(pezo[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
     gainadj = isnan(dbasetting) ? gaininit : (gaininit+(dbasetting-pstndba[1]))
 
     x = Libaudio.encode_syncsymbol(tcs, s, td, 10^(gainadj/20) * source, rate, 1, syncatten)
@@ -232,7 +232,7 @@ function setdba(
     bl = symloc[1]
     br = symloc[1] + round(Int,size(source,1)/rate*fs) - 1
     
-    val[6], pstndba = Libaudio.spl(pstn[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
+    val[6], pstndba = Libaudio.spl(pezo[:,1], y[bl:br,:], y[bl:br,1], 1, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
     return (all(val), gainadj, pstndba[1])
 end
 

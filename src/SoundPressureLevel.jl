@@ -472,7 +472,7 @@ function setdba(
     dbaadj = dbainit
 
     while true
-        gainadj = gainadj+(dbasetting-dbaadj))
+        gainadj = gainadj+(dbasetting-dbaadj)
         s = Libaudio.symbol_expsinesweep(800, 2000, 0.5, rate)
         x = Libaudio.encode_syncsymbol(tcs, s, td, 10^(gainadj/20) * source, rate, 1, syncatten)
         y = recording(f, x, ms, mm, fs, synchronous)

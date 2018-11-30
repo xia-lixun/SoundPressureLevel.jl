@@ -347,7 +347,7 @@ function setdba(
     dbaadj = dbainit
 
     while true
-        gainadj = gainadj+(dbasetting-dbaadj))
+        gainadj = gainadj+(dbasetting-dbaadj)
         x[1:m,1] = symbol * 10^(gainadj/20)
         y = recording(f, [zeros(round(Int,tcs*fs),1); repeat(x,rep,1)], ms, mm, fs, synchronous)  
         val, dbanow = Libaudio.spl(pezo[:,1], y, symbol, rep, wf, 0, 0, 100, 12000, piezo.dba, weighting="A")
